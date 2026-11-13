@@ -7,7 +7,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 
 from app.config import BACKEND_PORT, FRONTEND_ORIGINS, MONGO_URI, DATABASE_NAME
-from app.database.connection import db, ensure_indexes, get_database_stats, load_sample_reports
+from app.database.connection import build_database_client, db, ensure_indexes, get_database_stats, load_sample_reports
 from app.services.classifier import classify_report
 
 app = FastAPI(title="ThreatLens", version="1.0.0")
@@ -39,12 +39,11 @@ class ThreatReportPayload(BaseModel):
 @app.on_event("startup")
 def startup_event() -> None:
     try:
-        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
-        client.admin.command("ping")
+        build_database_client()
         ensure_indexes()
         load_sample_reports()
     except Exception as exc:  # pragma: no cover
-        raise RuntimeError(f"MongoDB connection failed: {exc}") from exc
+        raise RuntimeError(f"Database initialization failed: {exc}") from exc
 
 
 @app.get("/api/health")

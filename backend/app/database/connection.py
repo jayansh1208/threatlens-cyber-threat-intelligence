@@ -10,8 +10,22 @@ from app.config import DATABASE_NAME, MONGO_URI
 ROOT_DIR = Path(__file__).resolve().parents[3]
 DATA_DIR = ROOT_DIR / "data"
 
-client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
-db: Database = client[DATABASE_NAME]
+
+def build_database_client() -> Database:
+    mongo_uri = os.getenv("MONGO_URI", MONGO_URI)
+    database_name = os.getenv("DATABASE_NAME", DATABASE_NAME)
+    try:
+        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
+        client.admin.command("ping")
+        return client[database_name]
+    except Exception as exc:
+        raise RuntimeError(
+            f"MongoDB connection failed for {mongo_uri}. Start your local MongoDB at mongodb://localhost:27017 and retry."
+        ) from exc
+
+
+client = build_database_client()
+db: Database = client
 
 
 def get_db() -> Database:

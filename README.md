@@ -1,145 +1,154 @@
 # ThreatLens — Cyber Threat Intelligence Platform
 
-ThreatLens is a full-stack cyber threat intelligence dashboard built with React, FastAPI, and MongoDB. It combines threat intelligence search, analytics, classification, live MongoDB reporting, and the course-based MongoDB performance experiments required for Lab 7.1 and Lab 7.2.
+ThreatLens is a local-first cyber threat intelligence dashboard for exploring threat reports from MongoDB, running classification workflows, and analyzing dataset health with a simple React + FastAPI stack.
 
-Live app: https://threatlens-demo.vercel.app
-GitHub: https://github.com/jayansh1208/threatlens-cyber-threat-intelligence
-
-## Technology stack
-
-- Frontend: React + Vite + TypeScript + Tailwind CSS
-- Backend: FastAPI + PyMongo + Pydantic
-- Database: MongoDB (local development + MongoDB Atlas for production)
-- Deployment: Vercel for frontend, Render for backend
-
-## Architecture diagram
-
-```mermaid
-flowchart LR
-    User[Teacher / Analyst] --> FE[React + Vite Frontend on Vercel]
-    FE --> API[FastAPI Backend on Render]
-    API --> DB[(MongoDB Atlas / Local MongoDB)]
-    API --> Classifier[Rule-based Threat Classifier]
-```
+This project keeps the original Chapter 7 MongoDB labs intact while adding the ThreatLens application for classroom demonstration and local use.
 
 ## Features
 
-- Executive SOC dashboard with metrics and trends
-- Threat intelligence search, filtering, pagination, and detail pages
-- Real-time MongoDB-backed analytics and cache inspection
+- Executive SOC dashboard with summary metrics from MongoDB
+- Threat listing, search, pagination, and detail views
 - Rule-based classification for malware, ransomware, phishing, and breach activity
-- Source ingestion and management workflow
-- Lab 7.1 production schema analysis and Lab 7.2 working-set analysis
-- Clear separation between local development and production settings
+- Analysis pages for database statistics and source coverage
+- Local MongoDB connectivity for real report storage and analytics
+- Synthetic demo data explicitly labeled for demos and teaching
+- One-command startup for the complete React + FastAPI stack
 
-## Local development setup
+## Technology stack
+
+- Frontend: React, Vite, TypeScript, Tailwind CSS
+- Backend: FastAPI, Pydantic, PyMongo
+- Database: MongoDB Community Server running locally
+- Runtime: PowerShell startup script for local orchestration
+
+## Project structure
+
+```text
+chapter-07/
+├── README.md
+├── lab_01_production_schema.py
+├── lab_02_working_set_analysis.py
+└── ThreatLens/
+    ├── README.md
+    ├── .env.example
+    ├── start.ps1
+    ├── backend/
+    │   ├── app/
+    │   ├── scripts/
+    │   ├── tests/
+    │   ├── .env.example
+    │   ├── requirements.txt
+    │   └── .venv/
+    ├── frontend/
+    │   ├── src/
+    │   ├── public/
+    │   ├── .env.example
+    │   ├── package.json
+    │   └── package-lock.json
+    ├── data/
+    ├── labs/
+    └── docs/
+```
+
+## MongoDB configuration
+
+Use the local database configuration below for development:
+
+- URI: mongodb://localhost:27017
+- Database: threatlens
+
+Required environment values:
+
+```text
+MONGO_URI=mongodb://localhost:27017
+DATABASE_NAME=threatlens
+BACKEND_PORT=8000
+FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
+The backend expects the local MongoDB service to be running before startup.
+
+## Installation
 
 ### 1) Backend
 
-```bash
-cd ThreatLens/backend
+```powershell
+cd "C:\Users\HP\Desktop\NoSQL-Databases-using-MongoDB\chapter-07\ThreatLens\backend"
 python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-# or .venv\Scripts\Activate.ps1  # Windows PowerShell
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-cp .env.example .env
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### 2) Frontend
 
-```bash
-cd ThreatLens/frontend
+```powershell
+cd "C:\Users\HP\Desktop\NoSQL-Databases-using-MongoDB\chapter-07\ThreatLens\frontend"
 npm install
-cp .env.example .env
-npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
-### 3) MongoDB
+### 3) Start the complete app
 
-- Local development: `mongodb://localhost:27017`
-- Database name: `threatlens`
-- Connect with:
+From the project root:
 
-```bash
-mongosh mongodb://localhost:27017
+```powershell
+cd "C:\Users\HP\Desktop\NoSQL-Databases-using-MongoDB\chapter-07\ThreatLens"
+.\start.ps1
 ```
 
-## Production deployment
+This starts the FastAPI backend and the React frontend together in one command.
 
-### Frontend on Vercel
+## One-command startup
 
-1. Import the repository into Vercel.
-2. Set the project root to `ThreatLens/frontend`.
-3. Add environment variable:
-   - `VITE_API_URL=https://<your-render-backend>.onrender.com`
-4. Deploy.
+The project includes a PowerShell startup script that launches both services and opens the app in the default browser.
 
-### Backend on Render
-
-1. Create a new Web Service in Render.
-2. Root directory: `ThreatLens/backend`
-3. Build command: `pip install -r requirements.txt`
-4. Start command: `uvicorn app.main --host 0.0.0.0 --port $PORT`
-5. Add environment variables:
-   - `MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/<dbname>?retryWrites=true&w=majority`
-   - `DATABASE_NAME=threatlens`
-   - `FRONTEND_ORIGINS=https://<your-vercel-app>.vercel.app`
-
-### MongoDB Atlas
-
-1. Create a free or shared Atlas cluster.
-2. Create a database user with a strong password.
-3. Allow network access from Render and your local machine.
-4. Connect using the Atlas connection string.
-5. Keep the URL in environment variables only. Never commit secrets.
-
-## API documentation
-
-Once the backend is running locally:
-
-- http://localhost:8000/docs
-- http://localhost:8000/redoc
-
-## Lab experiments
-
-### Lab 7.1: Production schema analysis
-
-```bash
-cd ThreatLens/labs
-python lab_01_production_schema.py
+```powershell
+.\start.ps1
 ```
 
-### Lab 7.2: Working set analysis
+It checks for:
 
-```bash
-cd ThreatLens/labs
-python lab_02_working_set_analysis.py
+- MongoDB running on localhost:27017
+- backend virtual environment and dependencies
+- frontend dependencies
+- backend health and frontend readiness
+
+It then starts:
+
+- FastAPI on http://localhost:8000
+- React frontend on http://localhost:5173
+- Swagger docs on http://localhost:8000/docs
+
+## Local URLs
+
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8000
+- Swagger: http://localhost:8000/docs
+
+## Lab 7.1 instructions
+
+```powershell
+cd "C:\Users\HP\Desktop\NoSQL-Databases-using-MongoDB\chapter-07"
+python .\lab_01_production_schema.py
 ```
 
-## Data and sample records
+This script analyzes production schema patterns and compares collection design trade-offs for MongoDB.
 
-The application seeds demo sample reports when the target database is empty. These are clearly marked as synthetic demonstration data and are intended for testing and classroom use.
+## Lab 7.2 instructions
 
-## Screenshots
+```powershell
+cd "C:\Users\HP\Desktop\NoSQL-Databases-using-MongoDB\chapter-07"
+python .\lab_02_working_set_analysis.py
+```
 
-Add screenshots here after deployment or local capture, for example:
+This lab demonstrates working-set behavior, cache usage, and range-read performance characteristics.
 
-- Dashboard view
-- Threat list view
-- Classification workflow
-- Database analytics panel
+## Synthetic demo data
 
-## GitHub Actions
-
-The repository includes a basic CI workflow that installs frontend and backend dependencies and runs the backend test suite.
+The app can seed synthetic reports when the database is empty. These records are intentionally demo-only and should be treated as classroom or presentation data, not production intelligence.
 
 ## Notes
 
-- The local MongoDB setup remains available for development.
-- The production setup reads credentials from environment variables only.
-- No `.env`, `.venv`, or local database files are committed to Git.
-
-## License
-
-This project is intended for educational and demonstration purposes.
+- No deployment workflow is required for local use.
+- MongoDB remains the source of truth for analytics and threat reporting.
+- The startup script does not reset or delete the local database.
+- The local Python virtual environment and package lock files are kept intentionally.
